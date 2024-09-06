@@ -68,7 +68,10 @@ police = pygame.font.SysFont(None, 55)
 niveau = 1
 temps_niveau = 5  # Chaque niveau dure 5 secondes
 temps_initial = time.time()
-vitesse_obstacles = 3  # Vitesse initiale des obstacles
+vitesse_obstacles = 2  # Vitesse initiale des obstacles
+
+# Arka planın x pozisyonunu başlat
+background_x = 0
 
 # Fonction pour afficher un message à l'écran
 def afficher_message(texte, couleur, x, y):
@@ -127,7 +130,7 @@ def afficher_ecran_game_over():
 
 # Fonction principale du jeu
 def game_loop():
-    global carre_x, carre_y, obstacles, vitesse_x, vitesse_y, niveau, vitesse_obstacles, temps_initial, index_frame, temps_animation
+    global carre_x, carre_y, obstacles, vitesse_x, vitesse_y, niveau, vitesse_obstacles, temps_initial, index_frame, temps_animation, background_x
 
     # Réinitialiser les variables de jeu
     carre_x = LARGEUR // 4
@@ -136,7 +139,7 @@ def game_loop():
     vitesse_y = 0
     obstacles = []
     niveau = 1
-    vitesse_obstacles = 3
+    vitesse_obstacles = 12
     temps_initial = time.time()
 
     while True:
@@ -220,7 +223,7 @@ def game_loop():
         carre_x = max(0, min(carre_x, LARGEUR - frames[0].get_width()))  # Limiter le mouvement dans l'écran
         carre_y = max(0, min(carre_y, HAUTEUR - frames[0].get_height()))
 
-        if random.randint(0, 100) < 2:
+        if random.randint(0, 100) < 8:
             creer_obstacle()
 
         for obstacle in obstacles:
@@ -234,8 +237,16 @@ def game_loop():
             afficher_ecran_game_over()
             return
 
-        # Dessiner l'image de fond (arka plan)
-        ecran.blit(background_image, (0, 0))
+        # glisser l'ecran a gauche
+        background_x -= 5  # vitesse 
+
+        #
+        ecran.blit(background_image, (background_x, 0))
+        ecran.blit(background_image, (background_x + LARGEUR, 0)) 
+
+        # effet boucle
+        if background_x <= -LARGEUR:
+            background_x = 0
 
         # Dessiner l'image animée du personnage
         afficher_personnage_animate(ecran, frames, index_frame, carre_x, carre_y)
