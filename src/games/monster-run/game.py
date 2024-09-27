@@ -2,13 +2,12 @@ import pygame
 import sys
 import time
 import random
-from boss1 import boss1_loop
-from boss2 import boss2_loop
-from boss3 import boss3_loop
-from boss4 import boss4_loop
-from boss5 import boss5_loop
-from bossfinal import final_boss_loop
+
 from mainChar import charger_personnage, afficher_personnage_animate, mettre_a_jour_animation
+from globals import selected_character, player_name
+from mainChar import charger_personnage as charger_personnage1
+from char2 import charger_personnage as charger_personnage2
+from char3 import charger_personnage as charger_personnage3
 
 # Initialiser Pygame
 pygame.init()
@@ -79,10 +78,11 @@ vitesse_obstacles = 2  # Vitesse initiale des obstacles
 
 background_x = 0
 
-# Fonction pour afficher un message à l'écran
 def afficher_message(texte, couleur, x, y):
-    message = police.render(texte, True, couleur)
-    ecran.blit(message, [x, y])
+    police = pygame.font.SysFont("arial", 30)  # Police d'écriture
+    texte_surface = police.render(texte, True, couleur)
+    ecran.blit(texte_surface, (x, y))  # Dessine le texte à la position (x, y)
+
 
 # Fonction pour afficher la durée et le niveau en haut à droite
 def afficher_temps_et_niveau(temps_restant, niveau):
@@ -154,7 +154,30 @@ def afficher_ecran_game_over():
 
 # Fonction principale du jeu
 def game_loop():
+    from boss1 import boss1_loop
+    from boss2 import boss2_loop
+    from boss3 import boss3_loop
+    from boss4 import boss4_loop
+    from boss5 import boss5_loop
+    from bossfinal import final_boss_loop
+    from globals import selected_character, player_name  # Global variables are imported from globals.py
+
+
     global carre_x, carre_y, obstacles, vitesse_x, vitesse_y, niveau, vitesse_obstacles, temps_initial, index_frame, temps_animation, background_x
+
+        # Sélectionner l'animation du personnage selon le choix
+    if selected_character == 0:
+        frames = charger_personnage1()  # Main character
+    elif selected_character == 1:
+        frames = charger_personnage2()  # Deuxième personnage
+    elif selected_character == 2:
+        frames = charger_personnage3()  # Troisième personnage
+    else:
+        # Si aucun personnage n'est sélectionné, charger un personnage par défaut
+        frames = charger_personnage1()  # Par défaut, on charge le premier personnage
+
+     # Afficher le nom du joueur en haut
+    afficher_message(f"Joueur: {player_name}", NOIR, 10, 10)
 
     # Réinitialiser les variables de jeu
     carre_x = LARGEUR // 4

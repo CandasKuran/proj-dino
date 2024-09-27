@@ -48,10 +48,12 @@ Dans la section Working Directory, assurez-vous que le répertoire est défini s
 # Fonctionnalités à ajouter
 
 Connexion avec un compte : Se connecter pour enregistrer vos données et consulter vos statistiques.
+
 Classements : Consultez les meilleurs scores pour chaque jeu.
+
 Interface de sélection de jeu : Choisissez entre Monster-Run ou Pac-Man depuis la page d'accueil.
 Technologies utilisées
-Pygame : Bibliothèque utilisée pour développer les jeux.
+
 Base de données : Utilisée pour stocker les scores et les statistiques des utilisateurs.
 
 ### 

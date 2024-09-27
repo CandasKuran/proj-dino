@@ -1,12 +1,15 @@
 import pygame
 import sys
-from game import game_loop  # Burada game.py'deki ana oyun fonksiyonunu içe aktarıyoruz
+import globals
 from mainChar import charger_personnage as charger_personnage1
 from char2 import charger_personnage as charger_personnage2
 from char3 import charger_personnage as charger_personnage3
 
+
 # Fonction pour afficher une fenêtre de sélection de personnage au centre de l'écran
 def afficher_fenetre_selection(parent_ecran):
+    global selected_character, player_name  # On utilise les variables globales
+    
     # Dimensions de la petite fenêtre
     LARGEUR_FENETRE, HAUTEUR_FENETRE = 600, 400
     NOIR = (0, 0, 0)
@@ -26,6 +29,7 @@ def afficher_fenetre_selection(parent_ecran):
 
     # Variable pour suivre la sélection du personnage
     selectionne = None  # Aucun personnage sélectionné au début
+   
 
     # Centrer la petite fenêtre dans l'écran parent
     fenetre_rect = pygame.Rect(parent_ecran.get_width() // 2 - LARGEUR_FENETRE // 2,
@@ -116,8 +120,12 @@ def afficher_fenetre_selection(parent_ecran):
                 # Gérer les clics sur les boutons
                 if bouton_quitter.collidepoint(evenement.pos):
                     return  # Fermer la fenêtre sans sauvegarder
+                
                 if bouton_continuer.collidepoint(evenement.pos):
-                    return  # Fermer la fenêtre et continuer
+                    selected_character = selectionne  # Sauvegarder le personnage sélectionné
+                    player_name = texte_entre  # Sauvegarder le nom entré
+                    return  # Fermer la fenêtre et retourner à l'écran principal
+
 
             if evenement.type == pygame.KEYDOWN:
                 if actif:
@@ -134,6 +142,8 @@ def afficher_fenetre_selection(parent_ecran):
 
 # Fonction pour afficher l'écran de démarrage
 def afficher_ecran_demarrage():
+    from game import game_loop 
+    from game import afficher_message
     pygame.init()
 
     # Dimensions de l'écran
@@ -198,14 +208,17 @@ def afficher_ecran_demarrage():
 
             if evenement.type == pygame.MOUSEBUTTONDOWN:
                 if bouton_demarrer.collidepoint(evenement.pos):
-                    game_loop()  # Démarrer le jeu en appelant la fonction de game.py
+                    from game import game_loop
+                    game_loop()
                 if bouton_quitter.collidepoint(evenement.pos):
                     pygame.quit()
                     sys.exit()
                 if bouton_selection.collidepoint(evenement.pos):
                     afficher_fenetre_selection(ecran)  # Afficher l'écran de sélection du personnage
-
-        # Mettre à jour l'écran
+                if player_name:
+                    actif_texte = f"Joueur Actif: {player_name}"
+                    police_actif = pygame.font.SysFont("arial", 30)
+                    ecran.blit(police_actif.render(actif_texte, True, NOIR), (10, 10))
         pygame.display.flip()
 
 # Appeler la fonction d'affichage de l'écran de démarrage avant le début du jeu
