@@ -4,7 +4,7 @@
 Bienvenue dans **Proj-Dev Brain Games**, un projet de jeux vidéo avec deux jeux disponibles créé par nous : **Monster-Run**, **Pac-Man**, **Snake The Maze**. Ce projet est développé en utilisant **Pygame**.
 =======
 Bienvenue dans **Proj-Dev Brain Games**, un projet de jeux vidéo avec deux jeux disponibles : **Monster-Run** (créé par nous) et **Pac-Man**. Ce projet est développé en utilisant **Pygame**.
->>>>>>> monster-run
+>>>> monster-run
 
 ## Description
 
@@ -19,7 +19,7 @@ Le projet commence avec une page d'accueil où vous pouvez choisir quel jeu vous
 =======
 - **Monster-Run** : Un jeu d'action rapide où vous devez éviter les monstres.
 - **Pac-Man** : Le jeu d'arcade classique où vous mangez des points tout en évitant les fantômes.
->>>>>>> monster-run
+>>>> monster-run
 
 ## Installation
 
@@ -77,7 +77,7 @@ Base de données : Utilisée pour stocker les scores et les statistiques des uti
 
 ###
 
-<<<<<<< HEAD
+<<<< HEAD
 =======
 # Fonctionnalités à ajouter
 
@@ -93,7 +93,7 @@ Base de données : Utilisée pour stocker les scores et les statistiques des uti
 ### 
 
 
->>>>>>> monster-run
+>>>> monster-run
 # Technologies utilisées
 Pygame : Bibliothèque utilisée pour développer les jeux.
 Base de données : Utilisée pour stocker les scores et les statistiques des utilisateurs.
