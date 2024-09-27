@@ -1,6 +1,10 @@
 # Proj-Dev Brain Games
 
+<<<<<<< HEAD
 Bienvenue dans **Proj-Dev Brain Games**, un projet de jeux vidéo avec deux jeux disponibles créé par nous : **Monster-Run**, **Pac-Man**, **Snake The Maze**. Ce projet est développé en utilisant **Pygame**.
+=======
+Bienvenue dans **Proj-Dev Brain Games**, un projet de jeux vidéo avec deux jeux disponibles : **Monster-Run** (créé par nous) et **Pac-Man**. Ce projet est développé en utilisant **Pygame**.
+>>>>>>> monster-run
 
 ## Description
 
@@ -8,9 +12,14 @@ Le projet commence avec une page d'accueil où vous pouvez choisir quel jeu vous
 
 ### Jeux inclus :
 
+<<<<<<< HEAD
 - **Monster-Run** : Un jeu d'action rapide où vous devez éviter projectils projeté par les monstres.
 - **Pac-Man** : Le jeu d'arcade classique où vous mangez des points tout en évitant les fantômes.
 - **Snake The Maze** : Un jeu mélangeant le fameux jeu python snake avec un touche d'inspiration du film Maze Runner ou je but serra de sortir du labyrithe.
+=======
+- **Monster-Run** : Un jeu d'action rapide où vous devez éviter les monstres.
+- **Pac-Man** : Le jeu d'arcade classique où vous mangez des points tout en évitant les fantômes.
+>>>>>>> monster-run
 
 ## Installation
 
@@ -42,6 +51,16 @@ Allez dans File > Settings.
 Naviguez jusqu'à Project > Python Interpreter > Edit Configurations.
 Dans la section Working Directory, assurez-vous que le répertoire est défini sur le dossier racine de votre projet. Cela garantit que les chemins relatifs fonctionneront correctement.
 
+# Résolution du problème des chemins d'image dans PyCharm
+
+Lorsque vous utilisez des chemins relatifs pour les images (par exemple ./src/images/...), ceux-ci fonctionnent correctement sous VSCode mais peuvent poser problème sous PyCharm. Cela est dû au fait que le répertoire de travail par défaut dans PyCharm peut être différent.
+
+# Solution
+Pour résoudre ce problème dans PyCharm, vous devez configurer manuellement le répertoire de travail. Voici comment faire :
+
+Allez dans File > Settings.
+Naviguez jusqu'à Project > Python Interpreter > Edit Configurations.
+Dans la section Working Directory, assurez-vous que le répertoire est défini sur le dossier racine de votre projet. Cela garantit que les chemins relatifs fonctionneront correctement.
 
 ###
 
@@ -56,7 +75,25 @@ Base de données : Utilisée pour stocker les scores et les statistiques des uti
 
 ### 
 
+###
 
+<<<<<<< HEAD
+=======
+# Fonctionnalités à ajouter
+
+Connexion avec un compte : Se connecter pour enregistrer vos données et consulter vos statistiques.
+
+Classements : Consultez les meilleurs scores pour chaque jeu.
+
+Interface de sélection de jeu : Choisissez entre Monster-Run ou Pac-Man depuis la page d'accueil.
+Technologies utilisées
+
+Base de données : Utilisée pour stocker les scores et les statistiques des utilisateurs.
+
+### 
+
+
+>>>>>>> monster-run
 # Technologies utilisées
 Pygame : Bibliothèque utilisée pour développer les jeux.
 Base de données : Utilisée pour stocker les scores et les statistiques des utilisateurs.

@@ -2,19 +2,18 @@ import pygame
 import sys
 import time
 import random
-from boss1 import boss1_loop
-from boss2 import boss2_loop
-from boss3 import boss3_loop
-from boss4 import boss4_loop
-from boss5 import boss5_loop
-from bossfinal import final_boss_loop
+
 from mainChar import charger_personnage, afficher_personnage_animate, mettre_a_jour_animation
+from globals import selected_character, player_name
+from mainChar import charger_personnage as charger_personnage1
+from char2 import charger_personnage as charger_personnage2
+from char3 import charger_personnage as charger_personnage3
 
 # Initialiser Pygame
 pygame.init()
 
 # Dimensions de l'écran
-LARGEUR, HAUTEUR = 1100, 800
+LARGEUR, HAUTEUR = 1200, 800
 
 # Couleurs
 BLANC = (255, 255, 255)
@@ -22,6 +21,9 @@ NOIR = (0, 0, 0)
 ROUGE = (255, 0, 0)
 BLEU = (0, 0, 255)
 GRIS = (192, 192, 192)  # #c0c0c0 en format RGB
+BLACK = (26, 28, 27)
+OVER = (246, 246, 246, 255) 
+
 
 try:
     # Charger les frames du personnage en mouvement
@@ -33,6 +35,10 @@ except pygame.error as e:
     print(f"Erreur lors du chargement des images: {e}")
     pygame.quit()
     sys.exit()
+
+# Charger l'image de fond pour l'écran Game Over (Mettre le chemin correct)
+game_over_image = pygame.image.load('./src/games/monster-run/images/GameOver1.png')
+game_over_image = pygame.transform.scale(game_over_image, (400, 350))  # Redimensionner selon vos besoins
 
 # Index de l'animation du personnage
 index_frame = 0
@@ -68,12 +74,15 @@ police = pygame.font.SysFont(None, 55)
 niveau = 1
 temps_niveau = 5  # Chaque niveau dure 5 secondes
 temps_initial = time.time()
-vitesse_obstacles = 3  # Vitesse initiale des obstacles
+vitesse_obstacles = 2  # Vitesse initiale des obstacles
 
-# Fonction pour afficher un message à l'écran
+background_x = 0
+
 def afficher_message(texte, couleur, x, y):
-    message = police.render(texte, True, couleur)
-    ecran.blit(message, [x, y])
+    police = pygame.font.SysFont("arial", 30)  # Police d'écriture
+    texte_surface = police.render(texte, True, couleur)
+    ecran.blit(texte_surface, (x, y))  # Dessine le texte à la position (x, y)
+
 
 # Fonction pour afficher la durée et le niveau en haut à droite
 def afficher_temps_et_niveau(temps_restant, niveau):
@@ -97,22 +106,40 @@ def verifier_collision(carre_rect, objets):
             return True
     return False
 
-# Fonction pour afficher l'écran Game Over avec des options
+
+# Fonction pour dessiner des rectangles avec coins arrondis
+def dessiner_bouton_arrondi(ecran, couleur, rect, rayon):
+    surface = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+    pygame.draw.rect(surface, couleur, (rayon, 0, rect.width - 2 * rayon, rect.height))  # Dessiner le rectangle principal
+    pygame.draw.rect(surface, couleur, (0, rayon, rect.width, rect.height - 2 * rayon))
+    pygame.draw.circle(surface, couleur, (rayon, rayon), rayon)  # Coin supérieur gauche
+    pygame.draw.circle(surface, couleur, (rect.width - rayon, rayon), rayon)  # Coin supérieur droit
+    pygame.draw.circle(surface, couleur, (rayon, rect.height - rayon), rayon)  # Coin inférieur gauche
+    pygame.draw.circle(surface, couleur, (rect.width - rayon, rect.height - rayon), rayon)  # Coin inférieur droit
+    ecran.blit(surface, rect.topleft)
+
+
 def afficher_ecran_game_over():
-    ecran.fill(BLANC)
-    afficher_message("Game Over", ROUGE, LARGEUR // 3, HAUTEUR // 3)
+    ecran.fill(BLACK)  # Remplir le fond avec une couleur
     
-    bouton_rejouer = pygame.Rect(LARGEUR // 3, HAUTEUR // 2, 200, 50)
-    bouton_quitter = pygame.Rect(LARGEUR // 3, HAUTEUR // 2 + 70, 200, 50)
+    # Afficher l'image de game over au centre de l'écran
+    ecran.blit(game_over_image, ((LARGEUR - 300) // 2 - 60, (HAUTEUR - 300) // 3))  # Positionner l'image au centre
     
-    pygame.draw.rect(ecran, BLEU, bouton_rejouer)
-    pygame.draw.rect(ecran, BLEU, bouton_quitter)
+    # Créer deux boutons sous l'image
+    bouton_rejouer = pygame.Rect((LARGEUR // 2) - 220, HAUTEUR // 2 + 100, 180, 50)  # Bouton Rejouer (à gauche)
+    bouton_quitter = pygame.Rect((LARGEUR // 2) + 20, HAUTEUR // 2 + 100, 170, 50)   # Bouton Quitter (à droite)
     
-    afficher_message("Rejouer", BLANC, LARGEUR // 3 + 20, HAUTEUR // 2 + 10)
-    afficher_message("Quitter", BLANC, LARGEUR // 3 + 20, HAUTEUR // 2 + 80)
+    # Dessiner les boutons arrondis
+    dessiner_bouton_arrondi(ecran, GRIS, bouton_rejouer, 20)  # Rayon des coins = 20
+    dessiner_bouton_arrondi(ecran, ROUGE, bouton_quitter, 20)
+    
+    # Afficher les textes des boutons
+    afficher_message("Rejouer", NOIR, (LARGEUR // 2) - 200, HAUTEUR // 2 + 110)
+    afficher_message("Quitter", BLANC, (LARGEUR // 2) + 40, HAUTEUR // 2 + 110)
     
     pygame.display.flip()
 
+    # Boucle pour gérer les événements
     while True:
         for evenement in pygame.event.get():
             if evenement.type == pygame.QUIT:
@@ -120,14 +147,37 @@ def afficher_ecran_game_over():
                 sys.exit()
             if evenement.type == pygame.MOUSEBUTTONDOWN:
                 if bouton_rejouer.collidepoint(evenement.pos):
-                    game_loop()
+                    game_loop()  # Relancer la fonction principale du jeu
                 if bouton_quitter.collidepoint(evenement.pos):
                     pygame.quit()
                     sys.exit()
 
 # Fonction principale du jeu
 def game_loop():
-    global carre_x, carre_y, obstacles, vitesse_x, vitesse_y, niveau, vitesse_obstacles, temps_initial, index_frame, temps_animation
+    from boss1 import boss1_loop
+    from boss2 import boss2_loop
+    from boss3 import boss3_loop
+    from boss4 import boss4_loop
+    from boss5 import boss5_loop
+    from bossfinal import final_boss_loop
+    from globals import selected_character, player_name  # Global variables are imported from globals.py
+
+
+    global carre_x, carre_y, obstacles, vitesse_x, vitesse_y, niveau, vitesse_obstacles, temps_initial, index_frame, temps_animation, background_x
+
+        # Sélectionner l'animation du personnage selon le choix
+    if selected_character == 0:
+        frames = charger_personnage1()  # Main character
+    elif selected_character == 1:
+        frames = charger_personnage2()  # Deuxième personnage
+    elif selected_character == 2:
+        frames = charger_personnage3()  # Troisième personnage
+    else:
+        # Si aucun personnage n'est sélectionné, charger un personnage par défaut
+        frames = charger_personnage1()  # Par défaut, on charge le premier personnage
+
+     # Afficher le nom du joueur en haut
+    afficher_message(f"Joueur: {player_name}", NOIR, 10, 10)
 
     # Réinitialiser les variables de jeu
     carre_x = LARGEUR // 4
@@ -136,7 +186,7 @@ def game_loop():
     vitesse_y = 0
     obstacles = []
     niveau = 1
-    vitesse_obstacles = 3
+    vitesse_obstacles = 12
     temps_initial = time.time()
 
     while True:
@@ -147,7 +197,7 @@ def game_loop():
         # Mettre à jour l'animation du personnage
         index_frame, temps_animation = mettre_a_jour_animation(index_frame, temps_animation, intervalle_animation, horloge, frames)
 
-        if temps_ecoule > 10:
+        if temps_ecoule > 2:
             print(f"Transition vers le boss {niveau}")  # Debugging pour les bosses
             niveau += 1
             temps_initial = time.time()
@@ -220,7 +270,7 @@ def game_loop():
         carre_x = max(0, min(carre_x, LARGEUR - frames[0].get_width()))  # Limiter le mouvement dans l'écran
         carre_y = max(0, min(carre_y, HAUTEUR - frames[0].get_height()))
 
-        if random.randint(0, 100) < 2:
+        if random.randint(0, 100) < 8:
             creer_obstacle()
 
         for obstacle in obstacles:
@@ -228,14 +278,21 @@ def game_loop():
 
         obstacles = [obstacle for obstacle in obstacles if obstacle[0] > -LARGEUR_OBSTACLE]
 
-
         carre_rect = pygame.Rect(carre_x, carre_y, frames[0].get_width(), frames[0].get_height())
         if verifier_collision(carre_rect, obstacles):
             afficher_ecran_game_over()
             return
 
-        # Dessiner l'image de fond (arka plan)
-        ecran.blit(background_image, (0, 0))
+        # glisser l'ecran a gauche
+        background_x -= 5  # vitesse 
+
+        #
+        ecran.blit(background_image, (background_x, 0))
+        ecran.blit(background_image, (background_x + LARGEUR, 0)) 
+
+        # effet boucle
+        if background_x <= -LARGEUR:
+            background_x = 0
 
         # Dessiner l'image animée du personnage
         afficher_personnage_animate(ecran, frames, index_frame, carre_x, carre_y)
