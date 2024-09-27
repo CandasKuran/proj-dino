@@ -2,9 +2,10 @@ import pygame
 import sys
 import random
 import time
-from mainChar import charger_personnage, afficher_personnage_animate, mettre_a_jour_animation
+# from mainChar import charger_personnage, afficher_personnage_animate, mettre_a_jour_animation
 
 def boss1_loop():
+    from mainChar import charger_personnage, afficher_personnage_animate, mettre_a_jour_animation
     pygame.init()
 
     # Dimensions de la fenêtre
