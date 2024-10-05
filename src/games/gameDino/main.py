@@ -26,6 +26,9 @@ frame3 = pygame.image.load('./src/games/gameDino/img/h3.png').convert_alpha()
 frames_personnage = [frame1, frame2, frame3]
 
 # Créer les masques du personnage
+''' Au lieu de rogner les images, la solution de ChatGPT 
+    serait de rendre les arrière-plans transparents afin d'augmenter 
+    la sensibilité de collision avec les obstacles. '''
 frame1_mask = pygame.mask.from_surface(frame1)
 frame2_mask = pygame.mask.from_surface(frame2)
 frame3_mask = pygame.mask.from_surface(frame3)
@@ -71,7 +74,7 @@ delai_max_frame = 3
 # Listes des obstacles
 obstacles = []
 obstacles_2 = []
-obstacles_3 = []  # Liste pour le nouvel obstacle
+obstacles_3 = []  # Liste pour le nouvel obstacle "suprise"
 
 # Variables du jeu
 horloge = pygame.time.Clock()
@@ -91,6 +94,7 @@ def afficher_personnage():
     global index_frame, frame_delay, en_superman
     frame_delay += 1
 
+    "formule chatGPT 'index_fame' "
     if not en_superman:  # Animation de course normale
         if frame_delay >= delai_max_frame:
             index_frame = (index_frame + 1) % len(frames_personnage)
@@ -101,6 +105,8 @@ def afficher_personnage():
         ecran.blit(superman_image, (x_personnage, y_personnage))
 
 # Fonctions pour créer de nouveaux obstacles
+''''on evite les nouveaux obstacles d'apparaître à des endroits 
+    impossibles en creant des valeurs min et max.'''
 def creer_obstacle():
     if len(obstacles) == 0 or obstacles[-1][0] < LARGEUR - min_distance_entre_obstacles:
         distance_entre_obstacles = random.randint(min_distance_entre_obstacles, max_distance_entre_obstacles)
