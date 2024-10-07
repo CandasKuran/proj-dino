@@ -36,7 +36,7 @@ obstacles = []
 
 # Variables de jeu
 horloge = pygame.time.Clock()
-vitesse_jeu = 5  # Réduire la vitesse de jeu pour rendre le mouvement plus lent
+vitesse_jeu = 9  # Réduire la vitesse de jeu pour rendre le mouvement plus lent
 gravite = 0.4  # Ajuster la gravité pour un saut plus fluide
 
 # Fonction pour dessiner le personnage
