@@ -2,396 +2,388 @@ import pygame
 import random
 import sys
 
-# Initialiser Pygame
+# Initialize Pygame
 pygame.init()
 
-# Dimensions de l'écran
-LARGEUR, HAUTEUR = 1200, 600
-ecran = pygame.display.set_mode((LARGEUR, HAUTEUR))
-pygame.display.set_caption("Jeu de course")
+# Screen dimensions
+WIDTH, HEIGHT = 1200, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Running Game")
 
-# Couleurs
-BLANC = (255, 255, 255)
-GRIS = (200, 200, 200)   # Gris clair
-GRIS2 = (100, 100, 100)  # Gris foncé
-GRIS3 = (50, 50, 50)     # Gris très foncé
-NOIR = (0, 0, 0)
-ROUGE = (255, 0, 0)
-VERT = (0, 255, 0)
+# Colors
+WHITE = (255, 255, 255)
+LIGHT_GRAY = (200, 200, 200)
+DARK_GRAY = (100, 100, 100)
+VERY_DARK_GRAY = (50, 50, 50)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 
-# Charger les images du personnage (animations)
+# Load character images (animations)
 frame1 = pygame.image.load('./src/games/gameDino/img/h1.png').convert_alpha()
 frame2 = pygame.image.load('./src/games/gameDino/img/h2.png').convert_alpha()
 frame3 = pygame.image.load('./src/games/gameDino/img/h3.png').convert_alpha()
-frames_personnage = [frame1, frame2, frame3]
+character_frames = [frame1, frame2, frame3]
 
-# Créer les masques du personnage
-''' Au lieu de rogner les images, la solution de ChatGPT 
-    serait de rendre les arrière-plans transparents afin d'augmenter 
-    la sensibilité de collision avec les obstacles. '''
+# Create character masks
 frame1_mask = pygame.mask.from_surface(frame1)
 frame2_mask = pygame.mask.from_surface(frame2)
 frame3_mask = pygame.mask.from_surface(frame3)
-frames_personnage_masks = [frame1_mask, frame2_mask, frame3_mask]
+character_frame_masks = [frame1_mask, frame2_mask, frame3_mask]
 
-# Image et masque pour la position Superman
+# Image and mask for Superman position
 superman_image = pygame.image.load('./src/games/gameDino/img/h1-superMan.png').convert_alpha()
 superman_mask = pygame.mask.from_surface(superman_image)
 
-# Obtenir la hauteur du personnage
-hauteur_personnage = frame1.get_height()
+# Get character height
+character_height = frame1.get_height()
 
-# Charger les images des obstacles
-image_obstacle = pygame.image.load('./src/games/gameDino/img/obs1.png').convert_alpha()
-image_obstacle_2 = pygame.image.load('./src/games/gameDino/img/obs2.png').convert_alpha()
-image_obstacle_3 = pygame.image.load('./src/games/gameDino/img/obs3.png').convert_alpha()  # Nouvel obstacle
+# Load obstacle images
+obstacle_image = pygame.image.load('./src/games/gameDino/img/obs1.png').convert_alpha()
+obstacle_image_2 = pygame.image.load('./src/games/gameDino/img/obs2.png').convert_alpha()
+obstacle_image_3 = pygame.image.load('./src/games/gameDino/img/obs3.png').convert_alpha()  # New obstacle
 
-# Ajuster la taille des images des obstacles
-largeur_obstacle = 75
-hauteur_obstacle = 75
-image_obstacle = pygame.transform.scale(image_obstacle, (largeur_obstacle, hauteur_obstacle))
-image_obstacle_2 = pygame.transform.scale(image_obstacle_2, (largeur_obstacle, hauteur_obstacle))
-image_obstacle_3 = pygame.transform.scale(image_obstacle_3, (largeur_obstacle, hauteur_obstacle))
+# Resize obstacle images
+obstacle_width = 75
+obstacle_height = 75
+obstacle_image = pygame.transform.scale(obstacle_image, (obstacle_width, obstacle_height))
+obstacle_image_2 = pygame.transform.scale(obstacle_image_2, (obstacle_width, obstacle_height))
+obstacle_image_3 = pygame.transform.scale(obstacle_image_3, (obstacle_width, obstacle_height))
 
-# Recréer les masques après le redimensionnement
-obstacle_mask = pygame.mask.from_surface(image_obstacle)
-obstacle_2_mask = pygame.mask.from_surface(image_obstacle_2)
-obstacle_3_mask = pygame.mask.from_surface(image_obstacle_3)
+# Recreate masks after resizing
+obstacle_mask = pygame.mask.from_surface(obstacle_image)
+obstacle_2_mask = pygame.mask.from_surface(obstacle_image_2)
+obstacle_3_mask = pygame.mask.from_surface(obstacle_image_3)
 
-# Position initiale du personnage
-x_personnage = 50
-y_personnage = HAUTEUR - hauteur_personnage  # Positionner le personnage au sol
-vitesse_y = 0
-vitesse_x = 0  # Vitesse horizontale
-sauter = False
-en_superman = False
-index_frame = 0
+# Initial character position
+x_character = 50
+y_character = HEIGHT - character_height  # Position the character on the ground
+velocity_y = 0
+velocity_x = 0  # Horizontal speed
+jumping = False
+in_superman_mode = False
+frame_index = 0
 
-# Variables pour l'animation
+# Variables for animation
 frame_delay = 0
-delai_max_frame = 3
+max_frame_delay = 3
 
-# Listes des obstacles
+# Lists of obstacles
 obstacles = []
 obstacles_2 = []
-obstacles_3 = []  # Liste pour le nouvel obstacle "suprise"
+obstacles_3 = []  # List for the new "surprise" obstacle
 
-# Variables du jeu
-horloge = pygame.time.Clock()
-vitesse_jeu = 5  # Réduire la vitesse de jeu pour rendre le mouvement plus lent
-gravite = 0.4  # Ajuster la gravité pour un saut plus fluide
+# Game variables
+clock = pygame.time.Clock()
+game_speed = 5  # Reduce game speed for slower movement
+gravity = 0.4  # Adjust gravity for smoother jumping
 
+# Distance parameters between obstacles
+min_distance_between_obstacles = 300
+max_distance_between_obstacles = 600
 
-# Paramètres de distance entre les obstacles
-min_distance_entre_obstacles = 300
-max_distance_entre_obstacles = 600
-
-# Initialiser le score
+# Initialize score
 score = 0
 
-# Définir la police avant son utilisation
-police = pygame.font.Font(None, 36)
+# Define font before using it
+font = pygame.font.Font(None, 36)
 
-
-# Fonction pour dessiner le personnage
-def afficher_personnage():
-    global index_frame, frame_delay, en_superman
+# Function to draw the character
+def draw_character():
+    global frame_index, frame_delay, in_superman_mode
     frame_delay += 1
 
-    "formule chatGPT 'index_fame' "
-    if not en_superman:  # Animation de course normale
-        if frame_delay >= delai_max_frame:
-            index_frame = (index_frame + 1) % len(frames_personnage)
+    if not in_superman_mode:  # Normal running animation
+        if frame_delay >= max_frame_delay:
+            frame_index = (frame_index + 1) % len(character_frames)
             frame_delay = 0
-        ecran.blit(frames_personnage[index_frame], (x_personnage, y_personnage))
+        screen.blit(character_frames[frame_index], (x_character, y_character))
     else:
-        # Position Superman
-        ecran.blit(superman_image, (x_personnage, y_personnage))
+        # Superman position
+        screen.blit(superman_image, (x_character, y_character))
 
-# Fonctions pour créer de nouveaux obstacles
-''''on evite les nouveaux obstacles d'apparaître à des endroits 
-    impossibles en creant des valeurs min et max.'''
-def creer_obstacle():
-    if len(obstacles) == 0 or obstacles[-1][0] < LARGEUR - min_distance_entre_obstacles:
-        distance_entre_obstacles = random.randint(min_distance_entre_obstacles, max_distance_entre_obstacles)
-        obstacle_x = LARGEUR + distance_entre_obstacles
-        obstacle_y = HAUTEUR - hauteur_obstacle
+# Functions to create new obstacles
+def create_obstacle():
+    if len(obstacles) == 0 or obstacles[-1][0] < WIDTH - min_distance_between_obstacles:
+        distance_between_obstacles = random.randint(min_distance_between_obstacles, max_distance_between_obstacles)
+        obstacle_x = WIDTH + distance_between_obstacles
+        obstacle_y = HEIGHT - obstacle_height
         obstacles.append([obstacle_x, obstacle_y])
 
-def creer_obstacle_2():
-    if len(obstacles_2) == 0 or obstacles_2[-1][0] < LARGEUR - min_distance_entre_obstacles:
-        distance_entre_obstacles = random.randint(min_distance_entre_obstacles, max_distance_entre_obstacles)
-        obstacle_x = LARGEUR + distance_entre_obstacles
-        obstacle_y = HAUTEUR // 2
+def create_obstacle_2():
+    if len(obstacles_2) == 0 or obstacles_2[-1][0] < WIDTH - min_distance_between_obstacles:
+        distance_between_obstacles = random.randint(min_distance_between_obstacles, max_distance_between_obstacles)
+        obstacle_x = WIDTH + distance_between_obstacles
+        obstacle_y = HEIGHT // 2
         obstacles_2.append([obstacle_x, obstacle_y])
 
-def creer_obstacle_3():
-    # Cet obstacle apparaîtra soudainement devant le personnage
-    obstacle_x = x_personnage + random.randint(200, 400)
-    obstacle_y = HAUTEUR - hauteur_obstacle
+def create_obstacle_3():
+    # This obstacle will suddenly appear in front of the character
+    obstacle_x = x_character + random.randint(200, 400)
+    obstacle_y = HEIGHT - obstacle_height
     obstacles_3.append([obstacle_x, obstacle_y])
 
-# Contrôle de collision (obstacles au sol) - Basé sur des masques
-def verifier_collision():
-    if en_superman:
-        personnage_image = superman_image
-        personnage_mask = superman_mask
+# Collision detection (ground obstacles) - Based on masks
+def check_collision():
+    if in_superman_mode:
+        character_image = superman_image
+        character_mask = superman_mask
     else:
-        personnage_image = frames_personnage[index_frame]
-        personnage_mask = frames_personnage_masks[index_frame]
+        character_image = character_frames[frame_index]
+        character_mask = character_frame_masks[frame_index]
 
-    personnage_rect = personnage_image.get_rect(topleft=(x_personnage, y_personnage))
+    character_rect = character_image.get_rect(topleft=(x_character, y_character))
     for obstacle in obstacles:
-        obstacle_rect = image_obstacle.get_rect(topleft=(obstacle[0], obstacle[1]))
-        if personnage_rect.colliderect(obstacle_rect):
-            offset = (obstacle_rect.x - personnage_rect.x, obstacle_rect.y - personnage_rect.y)
-            if personnage_mask.overlap(obstacle_mask, offset):
+        obstacle_rect = obstacle_image.get_rect(topleft=(obstacle[0], obstacle[1]))
+        if character_rect.colliderect(obstacle_rect):
+            offset = (obstacle_rect.x - character_rect.x, obstacle_rect.y - character_rect.y)
+            if character_mask.overlap(obstacle_mask, offset):
                 return True
     return False
 
-# Contrôle de collision (obstacles en hauteur) - Basé sur des masques
-def verifier_collision_2():
-    if en_superman:
-        personnage_image = superman_image
-        personnage_mask = superman_mask
+# Collision detection (high obstacles) - Based on masks
+def check_collision_2():
+    if in_superman_mode:
+        character_image = superman_image
+        character_mask = superman_mask
     else:
-        personnage_image = frames_personnage[index_frame]
-        personnage_mask = frames_personnage_masks[index_frame]
+        character_image = character_frames[frame_index]
+        character_mask = character_frame_masks[frame_index]
 
-    personnage_rect = personnage_image.get_rect(topleft=(x_personnage, y_personnage))
+    character_rect = character_image.get_rect(topleft=(x_character, y_character))
     for obstacle in obstacles_2:
-        obstacle_rect = image_obstacle_2.get_rect(topleft=(obstacle[0], obstacle[1]))
-        if personnage_rect.colliderect(obstacle_rect):
-            offset = (obstacle_rect.x - personnage_rect.x, obstacle_rect.y - personnage_rect.y)
-            if personnage_mask.overlap(obstacle_2_mask, offset):
+        obstacle_rect = obstacle_image_2.get_rect(topleft=(obstacle[0], obstacle[1]))
+        if character_rect.colliderect(obstacle_rect):
+            offset = (obstacle_rect.x - character_rect.x, obstacle_rect.y - character_rect.y)
+            if character_mask.overlap(obstacle_2_mask, offset):
                 return True
     return False
 
-# Contrôle de collision pour le nouvel obstacle
-def verifier_collision_3():
-    if en_superman:
-        personnage_image = superman_image
-        personnage_mask = superman_mask
+# Collision detection for the new obstacle
+def check_collision_3():
+    if in_superman_mode:
+        character_image = superman_image
+        character_mask = superman_mask
     else:
-        personnage_image = frames_personnage[index_frame]
-        personnage_mask = frames_personnage_masks[index_frame]
+        character_image = character_frames[frame_index]
+        character_mask = character_frame_masks[frame_index]
 
-    personnage_rect = personnage_image.get_rect(topleft=(x_personnage, y_personnage))
+    character_rect = character_image.get_rect(topleft=(x_character, y_character))
     for obstacle in obstacles_3:
-        obstacle_rect = image_obstacle_3.get_rect(topleft=(obstacle[0], obstacle[1]))
-        if personnage_rect.colliderect(obstacle_rect):
-            offset = (obstacle_rect.x - personnage_rect.x, obstacle_rect.y - personnage_rect.y)
-            if personnage_mask.overlap(obstacle_3_mask, offset):
+        obstacle_rect = obstacle_image_3.get_rect(topleft=(obstacle[0], obstacle[1]))
+        if character_rect.colliderect(obstacle_rect):
+            offset = (obstacle_rect.x - character_rect.x, obstacle_rect.y - character_rect.y)
+            if character_mask.overlap(obstacle_3_mask, offset):
                 return True
     return False
 
-# Fonctions pour dessiner les obstacles
-def afficher_obstacle(obstacle_x, obstacle_y):
-    ecran.blit(image_obstacle, (obstacle_x, obstacle_y))
+# Functions to draw obstacles
+def draw_obstacle(obstacle_x, obstacle_y):
+    screen.blit(obstacle_image, (obstacle_x, obstacle_y))
 
-def afficher_obstacle_2(obstacle_x, obstacle_y):
-    ecran.blit(image_obstacle_2, (obstacle_x, obstacle_y))
+def draw_obstacle_2(obstacle_x, obstacle_y):
+    screen.blit(obstacle_image_2, (obstacle_x, obstacle_y))
 
-def afficher_obstacle_3(obstacle_x, obstacle_y):
-    ecran.blit(image_obstacle_3, (obstacle_x, obstacle_y))
+def draw_obstacle_3(obstacle_x, obstacle_y):
+    screen.blit(obstacle_image_3, (obstacle_x, obstacle_y))
 
-# Fonction pour afficher le score
-def afficher_score():
-    texte_score = police.render(f"Score: {score}", True, NOIR)
-    ecran.blit(texte_score, (LARGEUR - 150, 10))
+# Function to display the score
+def display_score():
+    score_text = font.render(f"Score: {score}", True, BLACK)
+    screen.blit(score_text, (WIDTH - 150, 10))
 
-# Fonction pour afficher l'écran de fin de jeu
-def afficher_ecran_fin():
-    ecran.fill(BLANC)
-    texte_fin = police.render("Game Over!", True, ROUGE)
-    ecran.blit(texte_fin, (LARGEUR // 3, HAUTEUR // 3))
+# Function to display the game over screen
+def display_game_over_screen():
+    screen.fill(WHITE)
+    game_over_text = font.render("Game Over!", True, RED)
+    screen.blit(game_over_text, (WIDTH // 3, HEIGHT // 3))
 
-    bouton_rejouer = pygame.Rect(LARGEUR // 4, HAUTEUR // 2, 200, 50)
-    bouton_quitter = pygame.Rect(LARGEUR // 2 + 100, HAUTEUR // 2, 200, 50)
+    replay_button = pygame.Rect(WIDTH // 4, HEIGHT // 2, 200, 50)
+    quit_button = pygame.Rect(WIDTH // 2 + 100, HEIGHT // 2, 200, 50)
 
-    pygame.draw.rect(ecran, VERT, bouton_rejouer)
-    pygame.draw.rect(ecran, ROUGE, bouton_quitter)
+    pygame.draw.rect(screen, GREEN, replay_button)
+    pygame.draw.rect(screen, RED, quit_button)
 
-    texte_rejouer = police.render("Rejouer", True, NOIR)
-    texte_quitter = police.render("Quitter", True, NOIR)
+    replay_text = font.render("Replay", True, BLACK)
+    quit_text = font.render("Quit", True, BLACK)
 
-    ecran.blit(texte_rejouer, (bouton_rejouer.x + 50, bouton_rejouer.y + 10))
-    ecran.blit(texte_quitter, (bouton_quitter.x + 50, bouton_quitter.y + 10))
+    screen.blit(replay_text, (replay_button.x + 50, replay_button.y + 10))
+    screen.blit(quit_text, (quit_button.x + 50, quit_button.y + 10))
 
     pygame.display.flip()
 
-    en_cours = True
-    while en_cours:
+    running = True
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if bouton_rejouer.collidepoint(event.pos):
+                if replay_button.collidepoint(event.pos):
                     reset_game()
-                    en_cours = False
-                if bouton_quitter.collidepoint(event.pos):
+                    running = False
+                if quit_button.collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
 
-# Fonction pour réinitialiser le jeu
+# Function to reset the game
 def reset_game():
-    global x_personnage, y_personnage, vitesse_y, vitesse_x, sauter, en_superman, obstacles, obstacles_2, obstacles_3, score, vitesse_jeu
-    x_personnage = 50
-    y_personnage = HAUTEUR - hauteur_personnage
-    vitesse_y = 0
-    vitesse_x = 0
-    sauter = False
-    en_superman = False
+    global x_character, y_character, velocity_y, velocity_x, jumping, in_superman_mode, obstacles, obstacles_2, obstacles_3, score, game_speed
+    x_character = 50
+    y_character = HEIGHT - character_height
+    velocity_y = 0
+    velocity_x = 0
+    jumping = False
+    in_superman_mode = False
     obstacles.clear()
     obstacles_2.clear()
     obstacles_3.clear()
     score = 0
-    vitesse_jeu = 5  # Nous réinitialisons la vitesse du jeu
-    boucle_jeu()
+    game_speed = 5  # Reset game speed
+    game_loop()
 
-# Boucle principale du jeu
-def boucle_jeu():
-    global x_personnage, y_personnage, vitesse_y, vitesse_x, sauter, obstacles, obstacles_2, obstacles_3, en_superman, score, vitesse_jeu, gravite, index_frame
+# Main game loop
+def game_loop():
+    global x_character, y_character, velocity_y, velocity_x, jumping, obstacles, obstacles_2, obstacles_3, in_superman_mode, score, game_speed, gravity, frame_index
 
-    en_cours = True
-    horloge = pygame.time.Clock()
-    temps_initial = pygame.time.get_ticks()
+    running = True
+    clock = pygame.time.Clock()
+    start_time = pygame.time.get_ticks()
 
-    while en_cours:
-        # Mettre à jour le score et le temps
-        temps_ecoule = pygame.time.get_ticks() - temps_initial
-        score = temps_ecoule // 100
+    while running:
+        # Update score and time
+        elapsed_time = pygame.time.get_ticks() - start_time
+        score = elapsed_time // 100
 
-        # Augmenter la difficulté du jeu
+        # Increase game difficulty
         if score >= 400:
-            background_color = GRIS3  # Mettre le fond en gris très foncé
-            vitesse_jeu = 10          # Augmenter la vitesse du jeu
-            gravite = 0.5             # Augmenter la gravité pour rendre le saut un peu plus difficile
-            obstacle_chance = 15      # Augmenter la probabilité d'apparition des obstacles
+            background_color = VERY_DARK_GRAY  # Set background to very dark gray
+            game_speed = 10                    # Increase game speed
+            gravity = 0.5                      # Increase gravity for harder jumps
+            obstacle_chance = 15               # Increase obstacle spawn probability
         elif score >= 300:
-            background_color = GRIS2  # Mettre le fond en gris foncé
-            vitesse_jeu = 9
-            gravite = 0.4
+            background_color = DARK_GRAY       # Set background to dark gray
+            game_speed = 9
+            gravity = 0.4
             obstacle_chance = 14
         elif score >= 200:
-            background_color = GRIS   # Mettre le fond en gris clair
-            vitesse_jeu = 8
-            gravite = 0.4
+            background_color = LIGHT_GRAY      # Set background to light gray
+            game_speed = 8
+            gravity = 0.4
             obstacle_chance = 12
         elif score >= 100:
-            background_color = GRIS   # Mettre le fond en gris clair
-            vitesse_jeu = 7
-            gravite = 0.4
+            background_color = LIGHT_GRAY      # Set background to light gray
+            game_speed = 7
+            gravity = 0.4
             obstacle_chance = 10
         else:
-            background_color = BLANC  # Fond normal
-            vitesse_jeu = 5
-            gravite = 0.4
+            background_color = WHITE           # Normal background
+            game_speed = 5
+            gravity = 0.4
             obstacle_chance = 5
 
-        ecran.fill(background_color)
+        screen.fill(background_color)
 
-        # Gérer les événements
+        # Handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                en_cours = False
+                running = False
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP and not sauter and not en_superman:
-                    vitesse_y = -10
-                    sauter = True
-                if event.key == pygame.K_SPACE and not sauter and not en_superman:
-                    en_superman = True
-                    vitesse_y = -8
-                    vitesse_x = 3
-                    sauter = True
+                if event.key == pygame.K_UP and not jumping and not in_superman_mode:
+                    velocity_y = -10
+                    jumping = True
+                if event.key == pygame.K_SPACE and not jumping and not in_superman_mode:
+                    in_superman_mode = True
+                    velocity_y = -8
+                    velocity_x = 3
+                    jumping = True
 
-        # Appliquer la gravité et le mouvement
-        if sauter:
-            vitesse_y += gravite
-            y_personnage += vitesse_y
-            x_personnage += vitesse_x
+        # Apply gravity and movement
+        if jumping:
+            velocity_y += gravity
+            y_character += velocity_y
+            x_character += velocity_x
 
-            # Le personnage revient lentement à la position de départ
-            if not en_superman and x_personnage > 50:
-                x_personnage -= 1
+            # Character slowly returns to starting position
+            if not in_superman_mode and x_character > 50:
+                x_character -= 1
 
-            # Réinitialiser les variables lorsque le personnage touche le sol
-            if y_personnage >= HAUTEUR - hauteur_personnage:
-                y_personnage = HAUTEUR - hauteur_personnage
-                sauter = False
-                vitesse_y = 0
-                vitesse_x = 0
-                en_superman = False
+            # Reset variables when character touches the ground
+            if y_character >= HEIGHT - character_height:
+                y_character = HEIGHT - character_height
+                jumping = False
+                velocity_y = 0
+                velocity_x = 0
+                in_superman_mode = False
 
-                # Reculer le personnage s'il est devant la position de départ
-                if x_personnage > 50:
-                    x_personnage -= 1
+                # Move character back if ahead of starting position
+                if x_character > 50:
+                    x_character -= 1
 
-        # Si le personnage ne saute pas et est devant la position de départ, le reculer
-        elif x_personnage > 50:
-            x_personnage -= 1  # Le personnage recule lentement
+        # If character is not jumping and is ahead of starting position, move back
+        elif x_character > 50:
+            x_character -= 1  # Character moves back slowly
 
-        # Déplacer les obstacles
+        # Move obstacles
         for obstacle in obstacles:
-            obstacle[0] -= vitesse_jeu
+            obstacle[0] -= game_speed
 
         for obstacle in obstacles_2:
-            obstacle[0] -= vitesse_jeu
+            obstacle[0] -= game_speed
 
         for obstacle in obstacles_3:
-            obstacle[0] -= vitesse_jeu  # Les bombes se déplacent maintenant vers le joueur
+            obstacle[0] -= game_speed  # Bombs now move towards the player
 
-        # Supprimer les obstacles qui sortent de l'écran
-        obstacles = [obstacle for obstacle in obstacles if obstacle[0] + largeur_obstacle > 0]
-        obstacles_2 = [obstacle for obstacle in obstacles_2 if obstacle[0] + largeur_obstacle > 0]
-        obstacles_3 = [obstacle for obstacle in obstacles_3 if obstacle[0] + largeur_obstacle > 0]
+        # Remove obstacles that go off screen
+        obstacles = [obstacle for obstacle in obstacles if obstacle[0] + obstacle_width > 0]
+        obstacles_2 = [obstacle for obstacle in obstacles_2 if obstacle[0] + obstacle_width > 0]
+        obstacles_3 = [obstacle for obstacle in obstacles_3 if obstacle[0] + obstacle_width > 0]
 
-        # Créer des obstacles
+        # Create obstacles
         chance = random.randint(0, 100)
         if chance < obstacle_chance:
-            creer_obstacle()
+            create_obstacle()
 
         if score > 100:
             chance = random.randint(0, 100)
             if chance < obstacle_chance:
-                creer_obstacle_2()
+                create_obstacle_2()
 
         if score >= 400:
-            # À des moments aléatoires, créer l'obstacle surprise
+            # At random times, create the surprise obstacle
             chance = random.randint(0, 500)
-            if chance < 5:  # Faible probabilité pour que l'obstacle apparaisse soudainement
-                creer_obstacle_3()
+            if chance < 5:  # Low probability for the obstacle to suddenly appear
+                create_obstacle_3()
 
-        # Vérifier les collisions
-        if verifier_collision() or verifier_collision_2() or verifier_collision_3():
-            afficher_ecran_fin()
-            en_cours = False
+        # Check collisions
+        if check_collision() or check_collision_2() or check_collision_3():
+            display_game_over_screen()
+            running = False
             continue
 
-        # Afficher le personnage
-        afficher_personnage()
+        # Draw the character
+        draw_character()
 
-        # Dessiner les obstacles
+        # Draw obstacles
         for obstacle in obstacles:
-            afficher_obstacle(obstacle[0], obstacle[1])
+            draw_obstacle(obstacle[0], obstacle[1])
 
         for obstacle in obstacles_2:
-            afficher_obstacle_2(obstacle[0], obstacle[1])
+            draw_obstacle_2(obstacle[0], obstacle[1])
 
         for obstacle in obstacles_3:
-            afficher_obstacle_3(obstacle[0], obstacle[1])
+            draw_obstacle_3(obstacle[0], obstacle[1])
 
-        # Afficher le score
-        afficher_score()
+        # Display the score
+        display_score()
 
-        # Mettre à jour l'écran
+        # Update the screen
         pygame.display.flip()
-        horloge.tick(30)
+        clock.tick(30)
 
     pygame.quit()
     sys.exit()
 
-# Lancer le jeu
-boucle_jeu()
+# Start the game
+game_loop()
