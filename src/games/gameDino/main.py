@@ -26,9 +26,6 @@ frame3 = pygame.image.load('./src/games/gameDino/img/h3.png').convert_alpha()
 frames_personnage = [frame1, frame2, frame3]
 
 # Créer les masques du personnage
-''' Au lieu de rogner les images, la solution de ChatGPT 
-    serait de rendre les arrière-plans transparents afin d'augmenter 
-    la sensibilité de collision avec les obstacles. '''
 frame1_mask = pygame.mask.from_surface(frame1)
 frame2_mask = pygame.mask.from_surface(frame2)
 frame3_mask = pygame.mask.from_surface(frame3)
@@ -92,13 +89,15 @@ score = 0
 # Définir la police avant son utilisation
 police = pygame.font.Font(None, 36)
 
+# Charger l'image de fond pour l'écran Game Over (Mettre le chemin correct)
+game_over_image = pygame.image.load('./src/games/gameDino/img/GameOver.png')
+game_over_image = pygame.transform.scale(game_over_image, (400, 350))  # Redimensionner selon vos besoins
 
 # Fonction pour dessiner le personnage
 def afficher_personnage():
     global index_frame, frame_delay, en_superman
     frame_delay += 1
 
-    "formule chatGPT 'index_fame' "
     if not en_superman:  # Animation de course normale
         if frame_delay >= delai_max_frame:
             index_frame = (index_frame + 1) % len(frames_personnage)
@@ -109,8 +108,6 @@ def afficher_personnage():
         ecran.blit(superman_image, (x_personnage, y_personnage))
 
 # Fonctions pour créer de nouveaux obstacles
-''''on evite les nouveaux obstacles d'apparaître à des endroits 
-    impossibles en creant des valeurs min et max.'''
 def creer_obstacle():
     if len(obstacles) == 0 or obstacles[-1][0] < LARGEUR - min_distance_entre_obstacles:
         distance_entre_obstacles = random.randint(min_distance_entre_obstacles, max_distance_entre_obstacles)
@@ -130,6 +127,7 @@ def creer_obstacle_3():
     obstacle_x = x_personnage + random.randint(200, 400)
     obstacle_y = HAUTEUR - hauteur_obstacle
     obstacles_3.append([obstacle_x, obstacle_y])
+
 
 # Contrôle de collision (obstacles au sol) - Basé sur des masques
 def verifier_collision():
@@ -200,20 +198,35 @@ def afficher_score():
     texte_score = police.render(f"Score: {score}", True, NOIR)
     ecran.blit(texte_score, (LARGEUR - 150, 10))
 
+# Fonction pour dessiner des rectangles avec coins arrondis (issue du premier code)
+def dessiner_bouton_arrondi(ecran, couleur, rect, rayon):
+    surface = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+    pygame.draw.rect(surface, couleur, (rayon, 0, rect.width - 2 * rayon, rect.height))  # Dessiner le rectangle principal
+    pygame.draw.rect(surface, couleur, (0, rayon, rect.width, rect.height - 2 * rayon))
+    pygame.draw.circle(surface, couleur, (rayon, rayon), rayon)  # Coin supérieur gauche
+    pygame.draw.circle(surface, couleur, (rect.width - rayon, rayon), rayon)  # Coin supérieur droit
+    pygame.draw.circle(surface, couleur, (rayon, rect.height - rayon), rayon)  # Coin inférieur gauche
+    pygame.draw.circle(surface, couleur, (rect.width - rayon, rect.height - rayon), rayon)  # Coin inférieur droit
+    ecran.blit(surface, rect.topleft)
+
 # Fonction pour afficher l'écran de fin de jeu
 def afficher_ecran_fin():
-    ecran.fill(BLANC)
-    texte_fin = police.render("Game Over!", True, ROUGE)
-    ecran.blit(texte_fin, (LARGEUR // 3, HAUTEUR // 3))
+    ecran.fill(NOIR)
+    
+    # Afficher l'image de game over au centre de l'écran
+    ecran.blit(game_over_image, ((LARGEUR - 300) // 2 - 60, (HAUTEUR - 300) // 3))  # Positionner l'image au centre
 
-    bouton_rejouer = pygame.Rect(LARGEUR // 4, HAUTEUR // 2, 200, 50)
-    bouton_quitter = pygame.Rect(LARGEUR // 2 + 100, HAUTEUR // 2, 200, 50)
+    # Créer deux boutons sous l'image
+    bouton_rejouer = pygame.Rect((LARGEUR // 2) - 220, HAUTEUR // 2 + 100, 180, 50)  # Bouton Rejouer (à gauche)
+    bouton_quitter = pygame.Rect((LARGEUR // 2) + 20, HAUTEUR // 2 + 100, 170, 50)   # Bouton Quitter (à droite)
 
-    pygame.draw.rect(ecran, VERT, bouton_rejouer)
-    pygame.draw.rect(ecran, ROUGE, bouton_quitter)
+    # Dessiner les boutons arrondis
+    dessiner_bouton_arrondi(ecran, GRIS, bouton_rejouer, 20)  # Rayon des coins = 20
+    dessiner_bouton_arrondi(ecran, ROUGE, bouton_quitter, 20)
 
+    # Afficher les textes des boutons
     texte_rejouer = police.render("Rejouer", True, NOIR)
-    texte_quitter = police.render("Quitter", True, NOIR)
+    texte_quitter = police.render("Quitter", True, BLANC)
 
     ecran.blit(texte_rejouer, (bouton_rejouer.x + 50, bouton_rejouer.y + 10))
     ecran.blit(texte_quitter, (bouton_quitter.x + 50, bouton_quitter.y + 10))
@@ -264,22 +277,22 @@ def boucle_jeu():
         score = temps_ecoule // 100
 
         # Augmenter la difficulté du jeu
-        if score >= 400:
+        if score >= 200:
             background_color = GRIS3  # Mettre le fond en gris très foncé
             vitesse_jeu = 10          # Augmenter la vitesse du jeu
             gravite = 0.5             # Augmenter la gravité pour rendre le saut un peu plus difficile
             obstacle_chance = 15      # Augmenter la probabilité d'apparition des obstacles
-        elif score >= 300:
+        elif score >= 150:
             background_color = GRIS2  # Mettre le fond en gris foncé
             vitesse_jeu = 9
             gravite = 0.4
             obstacle_chance = 14
-        elif score >= 200:
+        elif score >= 100:
             background_color = GRIS   # Mettre le fond en gris clair
             vitesse_jeu = 8
             gravite = 0.4
             obstacle_chance = 12
-        elif score >= 100:
+        elif score >= 50:
             background_color = GRIS   # Mettre le fond en gris clair
             vitesse_jeu = 7
             gravite = 0.4
@@ -358,7 +371,7 @@ def boucle_jeu():
             if chance < obstacle_chance:
                 creer_obstacle_2()
 
-        if score >= 400:
+        if score >= 250:
             # À des moments aléatoires, créer l'obstacle surprise
             chance = random.randint(0, 500)
             if chance < 5:  # Faible probabilité pour que l'obstacle apparaisse soudainement
