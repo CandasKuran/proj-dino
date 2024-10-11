@@ -25,7 +25,10 @@ frame2 = pygame.image.load('./src/games/gameDino/img/h2.png').convert_alpha()
 frame3 = pygame.image.load('./src/games/gameDino/img/h3.png').convert_alpha()
 character_frames = [frame1, frame2, frame3]
 
-# Create character masks
+# Créer les masques du personnage
+''' Au lieu de rogner les images, la solution de ChatGPT 
+    serait de rendre les arrière-plans transparents afin d'augmenter 
+    la sensibilité de collision avec les obstacles. '''
 frame1_mask = pygame.mask.from_surface(frame1)
 frame2_mask = pygame.mask.from_surface(frame2)
 frame3_mask = pygame.mask.from_surface(frame3)
@@ -85,29 +88,33 @@ max_distance_between_obstacles = 600
 # Initialize score
 score = 0
 
-# Define font before using it
-font = pygame.font.Font(None, 36)
+# Définir la police avant son utilisation
+police = pygame.font.Font(None, 36)
+
 
 # Function to draw the character
 def draw_character():
     global frame_index, frame_delay, in_superman_mode
     frame_delay += 1
 
-    if not in_superman_mode:  # Normal running animation
-        if frame_delay >= max_frame_delay:
-            frame_index = (frame_index + 1) % len(character_frames)
+    "formule chatGPT 'index_fame' "
+    if not en_superman:  # Animation de course normale
+        if frame_delay >= delai_max_frame:
+            index_frame = (index_frame + 1) % len(frames_personnage)
             frame_delay = 0
         screen.blit(character_frames[frame_index], (x_character, y_character))
     else:
         # Superman position
         screen.blit(superman_image, (x_character, y_character))
 
-# Functions to create new obstacles
-def create_obstacle():
-    if len(obstacles) == 0 or obstacles[-1][0] < WIDTH - min_distance_between_obstacles:
-        distance_between_obstacles = random.randint(min_distance_between_obstacles, max_distance_between_obstacles)
-        obstacle_x = WIDTH + distance_between_obstacles
-        obstacle_y = HEIGHT - obstacle_height
+# Fonctions pour créer de nouveaux obstacles
+''''on evite les nouveaux obstacles d'apparaître à des endroits 
+    impossibles en creant des valeurs min et max.'''
+def creer_obstacle():
+    if len(obstacles) == 0 or obstacles[-1][0] < LARGEUR - min_distance_entre_obstacles:
+        distance_entre_obstacles = random.randint(min_distance_entre_obstacles, max_distance_entre_obstacles)
+        obstacle_x = LARGEUR + distance_entre_obstacles
+        obstacle_y = HAUTEUR - hauteur_obstacle
         obstacles.append([obstacle_x, obstacle_y])
 
 def create_obstacle_2():
@@ -123,11 +130,11 @@ def create_obstacle_3():
     obstacle_y = HEIGHT - obstacle_height
     obstacles_3.append([obstacle_x, obstacle_y])
 
-# Collision detection (ground obstacles) - Based on masks
-def check_collision():
-    if in_superman_mode:
-        character_image = superman_image
-        character_mask = superman_mask
+# Contrôle de collision (obstacles au sol) - Basé sur des masques
+def verifier_collision():
+    if en_superman:
+        personnage_image = superman_image
+        personnage_mask = superman_mask
     else:
         character_image = character_frames[frame_index]
         character_mask = character_frame_masks[frame_index]
@@ -192,20 +199,20 @@ def display_score():
     score_text = font.render(f"Score: {score}", True, BLACK)
     screen.blit(score_text, (WIDTH - 150, 10))
 
-# Function to display the game over screen
-def display_game_over_screen():
-    screen.fill(WHITE)
-    game_over_text = font.render("Game Over!", True, RED)
-    screen.blit(game_over_text, (WIDTH // 3, HEIGHT // 3))
+# Fonction pour afficher l'écran de fin de jeu
+def afficher_ecran_fin():
+    ecran.fill(BLANC)
+    texte_fin = police.render("Game Over!", True, ROUGE)
+    ecran.blit(texte_fin, (LARGEUR // 3, HAUTEUR // 3))
 
-    replay_button = pygame.Rect(WIDTH // 4, HEIGHT // 2, 200, 50)
-    quit_button = pygame.Rect(WIDTH // 2 + 100, HEIGHT // 2, 200, 50)
+    bouton_rejouer = pygame.Rect(LARGEUR // 4, HAUTEUR // 2, 200, 50)
+    bouton_quitter = pygame.Rect(LARGEUR // 2 + 100, HAUTEUR // 2, 200, 50)
 
-    pygame.draw.rect(screen, GREEN, replay_button)
-    pygame.draw.rect(screen, RED, quit_button)
+    pygame.draw.rect(ecran, VERT, bouton_rejouer)
+    pygame.draw.rect(ecran, ROUGE, bouton_quitter)
 
-    replay_text = font.render("Replay", True, BLACK)
-    quit_text = font.render("Quit", True, BLACK)
+    texte_rejouer = police.render("Rejouer", True, NOIR)
+    texte_quitter = police.render("Quitter", True, NOIR)
 
     screen.blit(replay_text, (replay_button.x + 50, replay_button.y + 10))
     screen.blit(quit_text, (quit_button.x + 50, quit_button.y + 10))
@@ -255,26 +262,26 @@ def game_loop():
         elapsed_time = pygame.time.get_ticks() - start_time
         score = elapsed_time // 100
 
-        # Increase game difficulty
+        # Augmenter la difficulté du jeu
         if score >= 400:
-            background_color = VERY_DARK_GRAY  # Set background to very dark gray
-            game_speed = 10                    # Increase game speed
-            gravity = 0.5                      # Increase gravity for harder jumps
-            obstacle_chance = 15               # Increase obstacle spawn probability
+            background_color = GRIS3  # Mettre le fond en gris très foncé
+            vitesse_jeu = 10          # Augmenter la vitesse du jeu
+            gravite = 0.5             # Augmenter la gravité pour rendre le saut un peu plus difficile
+            obstacle_chance = 15      # Augmenter la probabilité d'apparition des obstacles
         elif score >= 300:
-            background_color = DARK_GRAY       # Set background to dark gray
-            game_speed = 9
-            gravity = 0.4
+            background_color = GRIS2  # Mettre le fond en gris foncé
+            vitesse_jeu = 9
+            gravite = 0.4
             obstacle_chance = 14
         elif score >= 200:
-            background_color = LIGHT_GRAY      # Set background to light gray
-            game_speed = 8
-            gravity = 0.4
+            background_color = GRIS   # Mettre le fond en gris clair
+            vitesse_jeu = 8
+            gravite = 0.4
             obstacle_chance = 12
         elif score >= 100:
-            background_color = LIGHT_GRAY      # Set background to light gray
-            game_speed = 7
-            gravity = 0.4
+            background_color = GRIS   # Mettre le fond en gris clair
+            vitesse_jeu = 7
+            gravite = 0.4
             obstacle_chance = 10
         else:
             background_color = WHITE           # Normal background
@@ -351,7 +358,7 @@ def game_loop():
                 create_obstacle_2()
 
         if score >= 400:
-            # At random times, create the surprise obstacle
+            # À des moments aléatoires, créer l'obstacle surprise
             chance = random.randint(0, 500)
             if chance < 5:  # Low probability for the obstacle to suddenly appear
                 create_obstacle_3()
