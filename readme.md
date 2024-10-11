@@ -1,5 +1,4 @@
-
-# Jeu de Course avec Pygame
+#ProjDEV - Brain Games
 
 ## Description
 Ce jeu est un jeu de course simple où le joueur contrôle un personnage qui court et doit éviter des obstacles. Le but du jeu est d'obtenir le meilleur score possible en sautant par-dessus des obstacles et en utilisant une "position Superman" pour franchir des obstacles en hauteur. Le jeu se complique à mesure que le score augmente avec de nouveaux obstacles et une vitesse croissante.
